@@ -136,7 +136,7 @@ uint8_t* snes_get_header(fileTYPE *f, int* size)
 		FileSeek(f, cpHeader, SEEK_SET);
 		if (FileReadAdv(f, buf, f->size - cpHeader))
 		{
-			uint32_t addr = find_header(buf, f->size);
+			uint32_t addr = find_header(buf, f->size - cpHeader);
 			if (addr)
 			{
 				uint8_t romsz = buf[addr + RomSize];

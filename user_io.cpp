@@ -1263,13 +1263,15 @@ int user_io_file_tx(const char* name, unsigned char index, char opensave, char m
 	{
 		if (is_snes_core())
 		{
+			int size;
 			printf("Load SNES ROM.\n");
-			uint8_t* buf = snes_get_header(&f);
+			uint8_t* buf = snes_get_header(&f, &size);
 			hexdump(buf, 16, 0);
 			EnableFpga();
 			spi8(UIO_FILE_TX_DAT);
 			spi_write(buf, 512, fio_size);
 			DisableFpga();
+			bytes2send = size;
 		}
 
 		while (bytes2send)

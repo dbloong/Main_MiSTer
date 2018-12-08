@@ -123,14 +123,18 @@ static uint32_t find_header(const uint8_t *data, uint32_t size)
 	return score_ex ? 0x40ffc0 : 0;
 }
 
-uint8_t* snes_get_header(fileTYPE *f)
+uint8_t* snes_get_header(fileTYPE *f, int* size)
 {
+	int cpHeader = f->size % 1024;
 	memset(hdr, 0, sizeof(hdr));
-	uint8_t *buf = (uint8_t*)malloc(f->size);
+	uint8_t *buf = (uint8_t*)malloc(f->size - cpHeader);
+	if (cpHeader > 0) {
+		printf("copier header detected - stripping off %i bytes\n", cpHeader);
+	}
 	if (buf)
 	{
-		FileSeekLBA(f, 0);
-		if (FileReadAdv(f, buf, f->size))
+		FileSeek(f, cpHeader, SEEK_SET);
+		if (FileReadAdv(f, buf, f->size - cpHeader))
 		{
 			uint32_t addr = find_header(buf, f->size);
 			if (addr)
@@ -153,7 +157,8 @@ uint8_t* snes_get_header(fileTYPE *f)
 				*(uint32_t*)(&hdr[4]) = addr;
 			}
 		}
-		FileSeekLBA(f, 0);
+		FileSeek(f, cpHeader, SEEK_SET); //ensure the copier header is skipped if it exists
+		*size = f->size - cpHeader;
 		free(buf);
 	}
 	return hdr;
